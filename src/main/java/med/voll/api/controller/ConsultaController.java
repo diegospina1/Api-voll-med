@@ -3,31 +3,33 @@ package med.voll.api.controller;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import med.voll.api.domain.consulta.AgendaDeConsultaService;
-import med.voll.api.domain.consulta.ConsultaRepository;
-import med.voll.api.domain.consulta.DatosAgendarConsulta;
-import med.voll.api.domain.consulta.DatosDetalleConsulta;
+import med.voll.api.domain.consulta.*;
+import med.voll.api.infra.errors.ValidacionDeIntegridad;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/consultas")
 public class ConsultaController {
 
     @Autowired
-    private ConsultaRepository consultaRepository;
-    @Autowired
     private AgendaDeConsultaService service;
 
     @PostMapping
     @Transactional
-    public ResponseEntity agendarCita(@RequestBody @Valid DatosAgendarConsulta datosAgendarConsulta){
+    public ResponseEntity agendarCita(@RequestBody @Valid DatosAgendarConsulta datosAgendarConsulta) throws ValidacionDeIntegridad {
 
-        service.agendar(datosAgendarConsulta);
-        return ResponseEntity.ok(new DatosDetalleConsulta(null,null,null,null));
+        var response = service.agendar(datosAgendarConsulta);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity cancelarCita(@RequestBody @Valid DatosCancelarConsulta datosCancelarCita, @PathVariable Long id){
+
+        service.cancelar(datosCancelarCita, id);
+        return ResponseEntity.noContent().build();
     }
 }
